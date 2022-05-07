@@ -1,4 +1,9 @@
 import {
+	JsDoc,
+	JsDocActivator,
+	JsDocDescription
+}                    from "./descriptions/js-doc";
+import {
 	Decorator,
 	DecoratorActivator,
 	DecoratorDescription
@@ -84,5 +89,13 @@ export const Mapper = {
 			type: resolveLazyType(p.t),
 			optional: p.o
 		});
+	},
+
+	/**
+	 * @internal
+	 */
+	mapJsDocs(jsDoc: JsDocDescription): JsDoc
+	{
+		return Reflect.construct(JsDoc, [jsDoc], JsDocActivator);
 	}
 };

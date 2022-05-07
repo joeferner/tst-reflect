@@ -10,6 +10,7 @@ export * from "./descriptions/indexed-access-type";
 export * from "./descriptions/constructor-import";
 export * from "./descriptions/enum-info";
 export * from "./descriptions/type-properties";
+export * from "./descriptions/js-doc";
 export * from "./Type";
 export * from "./reflect";
 

@@ -9,6 +9,7 @@ import {
 	getAccessor,
 	getCtorTypeReference,
 	getDeclaration,
+	getJsDocs,
 	getType,
 	isReadonly
 }                                    from "./helpers";
@@ -46,7 +47,8 @@ export function getProperties(symbol: ts.Symbol | undefined, type: ts.Type, cont
 					am: getAccessModifier(declaration?.modifiers),
 					acs: accessor,
 					ro: isReadonly(declaration?.modifiers) || accessor == Accessor.Getter,
-					o: declaration && (ts.isPropertyDeclaration(declaration) || ts.isPropertySignature(declaration)) && !!declaration.questionToken
+					o: declaration && (ts.isPropertyDeclaration(declaration) || ts.isPropertySignature(declaration)) && !!declaration.questionToken,
+					jsDocs: getJsDocs(declaration, context)
 				};
 			});
 

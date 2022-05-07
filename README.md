@@ -347,6 +347,10 @@ export declare class Type
      */
     get genericTypeDefault(): any;
     /**
+     * Returns the jsDocs on the type if present (must be enabled using "includeJsDocs" in config)
+     */
+    get jsDocs(): ReadonlyArray<JsDoc> | undefined;
+    /**
      * Search the type store for a specific type
      *
      * Runs the provided filter callback on each type. If your filter returns true, it returns this type.

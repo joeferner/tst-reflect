@@ -11,7 +11,9 @@ import { Context }                   from "./contexts/Context";
 import TransformerContext            from "./contexts/TransformerContext";
 import {
 	ConstructorImportDescriptionSource,
-	GetTypeCall
+	GetTypeCall,
+	JsDocDescriptionSource,
+	JsDocTagDescriptionSource
 }                                    from "./declarations";
 import { getTypeCallFromProperties } from "./getTypeCall";
 import { log }                       from "./log";
@@ -452,6 +454,38 @@ export function getAccessModifier(modifiers?: ts.ModifiersArray): AccessModifier
 	}
 
 	return AccessModifier.Public;
+}
+
+/**
+ * Return JsDocs if configured to includeJsDocs
+ */
+export function getJsDocs(declaration: any, context: Context): JsDocDescriptionSource[] | undefined
+{
+	if (declaration && context.config.includeJsDocs)
+	{
+		const jsDocsNodes = declaration.jsDoc as ts.JSDoc[];
+		return jsDocsNodes?.flatMap(n => {
+			const source: JsDocDescriptionSource = {
+				tags: n.tags?.flatMap(t => {
+					const tag: JsDocTagDescriptionSource = {
+						tagName: t.tagName.escapedText.toString(),
+						name: ((t as ts.JSDocPropertyLikeTag).name as ts.Identifier)?.escapedText?.toString()
+					};
+					if (typeof t.comment === 'string' || t.comment instanceof String)
+					{
+						tag.comment = t.comment as string;
+					}
+					return tag;
+				})
+			};
+			if (typeof n.comment === 'string' || n.comment instanceof String)
+			{
+				source.comment = n.comment as string;
+			}
+			return source;
+		});
+	}
+	return undefined;
 }
 
 /**

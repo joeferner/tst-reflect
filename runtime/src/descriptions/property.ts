@@ -11,6 +11,10 @@ import {
 	Decorator,
 	DecoratorDescription
 }                          from "./decorator";
+import {
+	JsDoc,
+	JsDocDescription
+}                          from "./js-doc";
 
 /**
  * @internal
@@ -51,6 +55,11 @@ export interface PropertyDescription
 	 * Readonly
 	 */
 	ro?: boolean;
+
+	/**
+	 * jsDocs if present
+	 */
+	jsDocs?: Array<JsDocDescription>;
 }
 
 /**
@@ -95,6 +104,11 @@ export class Property
 	readonly readonly: boolean;
 
 	/**
+	 * jsDocs if present
+	 */
+	readonly jsDocs?: ReadonlyArray<JsDoc>;
+
+	/**
 	 * @param description
 	 * @internal
 	 */
@@ -107,6 +121,7 @@ export class Property
 		this.accessModifier = description.am ?? AccessModifier.Public;
 		this.accessor = description.acs ?? Accessor.None;
 		this.readonly = description.ro ?? false;
+		this.jsDocs = description.jsDocs?.map(Mapper.mapJsDocs);
 	}
 	
 	/**

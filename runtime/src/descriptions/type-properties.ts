@@ -4,6 +4,7 @@ import { ConditionalTypeDescription }   from "./conditional-type";
 import { ConstructorImportDescription } from "./constructor-import";
 import { DecoratorDescription }         from "./decorator";
 import { IndexedAccessTypeDescription } from "./indexed-access-type";
+import { JsDocDescription }             from "./js-doc";
 import {
 	ConstructorDescription,
 	MethodDescription
@@ -120,4 +121,9 @@ export interface TypeProperties
 	 * Indexed access type description
 	 */
 	iat?: IndexedAccessTypeDescription;
+
+	/**
+	 * jsDocs if present
+	 */
+	jsDocs?: Array<JsDocDescription>;
 }

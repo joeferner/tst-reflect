@@ -52,7 +52,9 @@ type ConfigReflectionSection = {
 		filePath: string
 	},
 
-	debugMode: "true" | "false" | "0" | "1" | boolean
+	debugMode: "true" | "false" | "0" | "1" | boolean,
+
+	includeJsDocs: "true" | "false" | "0" | "1" | boolean
 }
 
 export interface ConfigObject
@@ -107,6 +109,11 @@ export interface ConfigObject
 	debugMode: boolean;
 
 	/**
+	 * Include jsDocs in output
+	 */
+	includeJsDocs: boolean;
+
+	/**
 	 * "universal" is basic usage for both server and browser. But there will be no redundant information.
 	 * "server" will have extended metadata.
 	 */
@@ -142,6 +149,7 @@ function getConfigReflectionSection(configPath: string): ConfigReflectionSection
 	return {
 		mode: reflection.mode || ModeValues.universal,
 		debugMode: reflection.debugMode || false,
+		includeJsDocs: reflection.includeJsDocs || false,
 		metadata: {
 			type: reflection.metadata?.type || MetadataTypeValues.inline,
 			filePath: reflection.metadata?.filePath?.toString() || ""
@@ -154,6 +162,7 @@ function readConfig(configPath: string, rootDir: string): {
 	useMetadata: boolean,
 	useMetadataType: MetadataType,
 	debugMode: boolean,
+	includeJsDocs: boolean,
 	mode: Mode
 }
 {
@@ -184,6 +193,7 @@ function readConfig(configPath: string, rootDir: string): {
 		useMetadataType: reflection.metadata.type,
 		metadataFilePath: reflection.metadata.filePath,
 		debugMode: ["true", "1"].includes(reflection?.debugMode?.toString()),
+		includeJsDocs: ["true", "1"].includes(reflection?.includeJsDocs?.toString()),
 	};
 }
 
@@ -205,6 +215,7 @@ export function createConfig(options: ts.CompilerOptions, rootDir: string, packa
 		useMetadataType: config.useMetadataType,
 		metadataFilePath: config.metadataFilePath,
 		debugMode: config.debugMode,
+		includeJsDocs: config.includeJsDocs,
 		parsedCommandLine: ts.getParsedCommandLineOfConfigFile(configPath, undefined, ts.sys as any),
 		isUniversalMode(): boolean
 		{

@@ -17,6 +17,7 @@ import { getProperties }            from "./getProperties";
 import { getTypeCall }              from "./getTypeCall";
 import {
 	createCtorPromise,
+	getJsDocs,
 	getType,
 	getTypeFullName,
 	getTypeKind,
@@ -346,7 +347,7 @@ export function getTypeDescription(
 		fn: getTypeFullName(type, context),
 		props: getProperties(symbolToUse, type, context),
 		meths: getMethods(symbolToUse, type, context),
-		decs: decorators,
+		decs: decorators
 	};
 
 	if (kind === TypeKind.Class)
@@ -435,6 +436,8 @@ export function getTypeDescription(
 		ts.isClassDeclaration(declaration) || ts.isInterfaceDeclaration(declaration)
 	))
 	{
+		properties.jsDocs = getJsDocs(declaration, context);
+
 		// extends & implements
 		if (declaration.heritageClauses)
 		{

@@ -9,6 +9,10 @@ import {
 	DecoratorDescription
 }                         from "./decorator";
 import {
+	JsDoc,
+	JsDocDescription
+}                         from "./js-doc";
+import {
 	MethodParameter,
 	ParameterDescription
 }                         from "./parameter";
@@ -52,19 +56,26 @@ export interface MethodDescription
 	 * Access modifier
 	 */
 	am: AccessModifier;
+
+	/**
+	 * jsDocs if present
+	 */
+	jsDocs?: Array<JsDocDescription>;
 }
 
 export abstract class MethodBase
 {
 	private readonly _parameters: Array<MethodParameter>;
+	private readonly _jsDocs: Array<JsDoc> | undefined;
 
 	/**
 	 * Internal constructor
 	 * @internal
 	 */
-	protected constructor(params: Array<ParameterDescription>)
+	protected constructor(params: Array<ParameterDescription>, jsDocs: Array<JsDocDescription> | undefined)
 	{
 		this._parameters = params?.map(Mapper.mapMethodParameters) || [];
+		this._jsDocs = jsDocs?.map(Mapper.mapJsDocs);
 	}
 
 	/**
@@ -73,6 +84,14 @@ export abstract class MethodBase
 	getParameters(): ReadonlyArray<MethodParameter>
 	{
 		return this._parameters.slice();
+	}
+
+	/**
+	 * jsDocs if present
+	 */
+	get jsDocs(): JsDoc[] | undefined
+	{
+		return this._jsDocs;
 	}
 }
 
@@ -126,7 +145,7 @@ export class Method extends MethodBase
 	 */
 	constructor(description: MethodDescription)
 	{
-		super(description.params);
+		super(description.params, description.jsDocs);
 
 		if (new.target != MethodActivator)
 		{
@@ -172,6 +191,11 @@ export class MethodActivator extends Method
 export interface ConstructorDescription
 {
 	params: Array<ParameterDescription>;
+
+	/**
+	 * jsDocs if present
+	 */
+	jsDocs?: Array<JsDocDescription>;
 }
 
 /**
@@ -185,7 +209,7 @@ export class Constructor extends MethodBase
 	 */
 	constructor(description: ConstructorDescription)
 	{
-		super(description.params);
+		super(description.params, description.jsDocs);
 
 		if (new.target != ConstructorActivator)
 		{

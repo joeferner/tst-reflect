@@ -10,6 +10,7 @@ import { getTypeCall }            from "./getTypeCall";
 import {
 	getAccessModifier,
 	getFunctionLikeSignature,
+	getJsDocs,
 	getUnknownTypeCall,
 }                              from "./helpers";
 
@@ -44,7 +45,8 @@ export function getMethodDescription(symbol: ts.Symbol, context: Context): Metho
 		d: getDecorators(symbol, context),
 		tp: getMethodGenerics(symbol, context),
 		o: (symbol.flags & ts.SymbolFlags.Optional) === ts.SymbolFlags.Optional,
-		am: getAccessModifier(symbol.valueDeclaration?.modifiers)
+		am: getAccessModifier(symbol.valueDeclaration?.modifiers),
+		jsDocs: getJsDocs(symbol.declarations?.[0], context)
 	};
 }
 

@@ -30,6 +30,7 @@
 	"reflection": {
 		"mode": "server",
 		"metadata": false,
-		"debugMode": false
+		"debugMode": false,
+		"includeJsDocs": true
 	}
 }

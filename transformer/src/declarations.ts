@@ -168,6 +168,11 @@ export interface MethodDescriptionSource
 	 * Access modifier
 	 */
 	am: AccessModifier;
+
+	/**
+	 * jsDocs if present
+	 */
+	jsDocs?: Array<JsDocDescriptionSource>;
 }
 
 /**
@@ -205,6 +210,10 @@ export interface ConstructorImportDescriptionSource
 export interface ConstructorDescriptionSource
 {
 	params: Array<ParameterDescriptionSource>;
+	/**
+	 * jsDocs if present
+	 */
+	jsDocs?: Array<JsDocDescriptionSource>;
 }
 
 /**
@@ -359,6 +368,11 @@ export interface TypePropertiesSource
 	 * Indexed access type description
 	 */
 	iat?: IndexedAccessTypeDescriptionSource;
+
+	/**
+	 * jsDocs if present
+	 */
+	jsDocs?: Array<JsDocDescriptionSource>;
 }
 
 /**
@@ -376,4 +390,21 @@ export type TypeDescriptionResult = {
 	typeDescription: TypePropertiesSource;
 } | {
 	ok: false
+};
+
+/**
+ * @internal
+ */
+export type JsDocDescriptionSource = {
+	comment?: string;
+	tags?: Array<JsDocTagDescriptionSource>;
+};
+
+/**
+ * @internal
+ */
+export type JsDocTagDescriptionSource = {
+	tagName: string;
+	name?: string;
+	comment?: string;
 };

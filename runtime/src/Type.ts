@@ -14,6 +14,7 @@ import type { Property, }         from "./descriptions/property";
 import type { MethodParameter, }  from "./descriptions/parameter";
 import type { EnumInfo }          from "./descriptions/enum-info";
 import type { TypeProperties }    from "./descriptions/type-properties";
+import type { JsDoc }             from "./descriptions/js-doc";
 import { TypeKind }               from "./enums";
 import {
 	Mapper,
@@ -81,7 +82,9 @@ export class Type
 	private _genericTypeConstraint?: Type;
 	/** @internal */
 	private _genericTypeDefault?: Type;
-
+	/** @internal */
+	private _jsDocs?: Array<JsDoc>;
+		
 	/** @internal */
 	private static _store: MetadataStore = {
 		store: {},
@@ -153,6 +156,7 @@ export class Type
 		} : undefined;
 		this._genericTypeConstraint = resolveLazyType(description.con);
 		this._genericTypeDefault = resolveLazyType(description.def);
+		this._jsDocs = description.jsDocs?.map(Mapper.mapJsDocs);
 
 		// BaseType of Type.Object must be undefined
 		this._baseType = resolveLazyType(description.bt)
@@ -261,6 +265,13 @@ export class Type
 		return this._genericTypeDefault;
 	}
 
+	/**
+	 * Returns the jsDocs on the type if present (must be enabled using "includeJsDocs" in config)
+	 */
+	get jsDocs(): ReadonlyArray<JsDoc> | undefined {
+		return this._jsDocs;
+	}
+	
 	/**
 	 * Search the type store for a specific type
 	 *
