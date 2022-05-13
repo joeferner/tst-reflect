@@ -3,6 +3,7 @@ import * as ts                       from "typescript";
 import { Context }                   from "./contexts/Context";
 import { PropertyDescriptionSource } from "./declarations";
 import { getDecorators }             from "./getDecorators";
+import { getTypeArguments }          from "./getTypeArguments";
 import { getTypeCall }               from "./getTypeCall";
 import {
 	getAccessModifier,
@@ -33,7 +34,7 @@ export function getProperties(symbol: ts.Symbol | undefined, type: ts.Type, cont
 				const declaration = getDeclaration(memberSymbol);
 				const accessor = getAccessor(declaration);
 				let type = getType(memberSymbol, context.typeChecker);
-
+ 
 				if (declaration && ts.isIndexSignatureDeclaration(declaration))
 				{
 					const indexSignature = declaration as ts.IndexSignatureDeclaration;
@@ -42,7 +43,13 @@ export function getProperties(symbol: ts.Symbol | undefined, type: ts.Type, cont
 
 				return {
 					n: memberSymbol.escapedName.toString(),
-					t: getTypeCall(type, memberSymbol, context, getCtorTypeReference(memberSymbol)),
+					t: getTypeCall(
+						type,
+						memberSymbol,
+						context,
+						getCtorTypeReference(memberSymbol),
+						getTypeArguments(memberSymbol, context)
+					),
 					d: getDecorators(memberSymbol, context),
 					am: getAccessModifier(declaration?.modifiers),
 					acs: accessor,

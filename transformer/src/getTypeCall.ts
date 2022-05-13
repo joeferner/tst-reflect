@@ -31,7 +31,14 @@ const creatingTypes: Array<number> = [];
  * @param context
  * @param typeCtor
  */
-export function getTypeCall(type: ts.Type, symbol: ts.Symbol | undefined, context: Context, typeCtor?: ts.EntityName | ts.DeclarationName): GetTypeCall // TODO: Remove symbol parameter if possible
+export function getTypeCall(
+	type: ts.Type,
+	symbol: ts.Symbol | undefined,
+	context: Context,
+	typeCtor?: ts.EntityName | ts.DeclarationName,
+	typeArguments?: GetTypeCall[]
+)
+	: GetTypeCall // TODO: Remove symbol parameter if possible
 {
 	const isNative = (type as any)["intrinsicName"] !== undefined;
 	const id = isNative ? undefined : getTypeId(type, context.typeChecker);
@@ -51,7 +58,7 @@ export function getTypeCall(type: ts.Type, symbol: ts.Symbol | undefined, contex
 			creatingTypes.push(id);
 		}
 
-		typeDescription = getTypeDescription(type, symbol, context, typeCtor);
+		typeDescription = getTypeDescription(type, symbol, context, typeCtor, typeArguments);
 		const typePropertiesObjectLiteral = createValueExpression(typeDescription.properties) as ts.ObjectLiteralExpression;
 
 		if (id)

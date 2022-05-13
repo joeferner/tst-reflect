@@ -3,11 +3,13 @@ import * as ts                      from "typescript";
 import { MetadataTypeValues }       from "./config-options";
 import { Context }                  from "./contexts/Context";
 import {
+	GetTypeCall,
 	TypeDescription,
 	TypePropertiesSource
 }                                   from "./declarations";
 import { getConstructors }          from "./getConstructors";
 import { getDecorators }            from "./getDecorators";
+import { getTypeArguments }         from "./getTypeArguments";
 import { getExportOfConstructor }   from "./getExports";
 import getLiteralName               from "./getLiteralName";
 import { getMethods }               from "./getMethods";
@@ -37,7 +39,8 @@ export function getTypeDescription(
 	type: ts.Type,
 	symbol: ts.Symbol | undefined,
 	context: Context,
-	typeCtor?: ts.EntityName | ts.DeclarationName
+	typeCtor?: ts.EntityName | ts.DeclarationName,
+	typeArguments?: GetTypeCall[]
 )
 	: TypeDescription
 {
@@ -278,7 +281,8 @@ export function getTypeDescription(
 			properties: {
 				n: type.aliasSymbol?.name.toString(),
 				k: TypeKind.Object,
-				props: getProperties(typeSymbol, type, context)
+				props: getProperties(typeSymbol, type, context),
+				args: typeArguments ?? getTypeArguments(type, context)
 			},
 			localType: false
 		};
@@ -445,10 +449,13 @@ export function getTypeDescription(
 
 			if (ext)
 			{
+				const extType = checker.getTypeAtLocation(ext.types[0]);
 				properties.bt = getTypeCall(
-					checker.getTypeAtLocation(ext.types[0]),
-					checker.getSymbolAtLocation(ext.types[0]),
-					context
+					extType,
+					checker.getSymbolAtLocation(ext.types[0]) ?? extType.symbol,
+					context,
+					undefined,
+					getTypeArguments(ext.types[0], context)
 				);
 			}
 
@@ -473,6 +480,9 @@ export function getTypeDescription(
 				context
 			));
 		}
+
+		// Type arguments
+		properties.args = typeArguments ?? getTypeArguments(type, context);
 	}
 
 	return {
