@@ -34,3 +34,15 @@ test("getType<T>() returns correct type", () => {
 		getType<string[]>().getTypeArguments()[0].is(getType<number[]>().getTypeArguments()[0])
 	).toBe(false);
 });
+
+test("getType<T>() tuple", () => {
+	type A = [string, number];
+
+	const t = getType<A>();
+	expect(t.name).toBe('A');
+	expect(t.isArray()).toBeTruthy();
+	const props = t.getProperties();
+	expect(props).toHaveLength(2);
+	expect(props[0].type.name).toBe('String');
+	expect(props[1].type.name).toBe('Number');
+});

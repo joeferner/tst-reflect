@@ -445,6 +445,9 @@ export class Type
 	 */
 	isArray(): boolean
 	{
+		if (this.kind == TypeKind.Tuple) {
+			return true;
+		}
 		return (this.isNative() || this.kind == TypeKind.LiteralType || this.kind == TypeKind.TransientTypeReference) && (this.name == "Array" || this.name == "ReadonlyArray");
 	}
 

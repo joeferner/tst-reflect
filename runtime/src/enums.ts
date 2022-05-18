@@ -46,7 +46,7 @@ export enum TypeKind
 	LiteralType = 6,
 
 	/**
-	 * Fixed lenght arrays literals
+	 * Fixed length arrays literals
 	 * @example <caption>type Coords = [x: number, y: number, z: number];</caption>
 	 */
 	Tuple = 7,

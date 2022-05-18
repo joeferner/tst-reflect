@@ -224,9 +224,17 @@ export function getTypeDescription(
 				log.info("Symbol is TypeLiteral of Object type.");
 			}
 
+			let kind = TypeKind.Object;
+			const declaration = symbol?.declarations?.[0];
+			const declarationTypeKind = (declaration as ts.SignatureDeclarationBase)?.type?.kind;
+			if (declarationTypeKind === ts.SyntaxKind.TupleType) {
+				kind = TypeKind.Tuple;
+			}
+
 			return {
 				properties: {
-					k: TypeKind.Object,
+					n: symbol?.escapedName?.toString(),
+					k: kind,
 					props: getProperties(symbol, type, context)
 				},
 				localType: false
