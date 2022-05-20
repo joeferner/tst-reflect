@@ -106,6 +106,11 @@ export interface PropertyDescriptionSource
 	 * Optional
 	 */
 	o?: boolean;
+
+	/**
+	 * Kind
+	 */
+	k?: TypeKind;
 }
 
 /**

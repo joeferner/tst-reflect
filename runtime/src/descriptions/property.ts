@@ -1,6 +1,7 @@
 import {
 	AccessModifier,
-	Accessor
+	Accessor,
+	TypeKind
 }                          from "../enums";
 import {
 	Mapper,
@@ -57,6 +58,11 @@ export interface PropertyDescription
 	ro?: boolean;
 
 	/**
+	 * Kind
+	 */
+	k?: TypeKind;
+
+	/**
 	 * jsDocs if present
 	 */
 	jsDocs?: Array<JsDocDescription>;
@@ -104,6 +110,11 @@ export class Property
 	readonly readonly: boolean;
 
 	/**
+	 * Kind
+	 */
+	readonly kind?: TypeKind;
+
+	/**
 	 * jsDocs if present
 	 */
 	readonly jsDocs?: ReadonlyArray<JsDoc>;
@@ -115,6 +126,7 @@ export class Property
 	protected constructor(description: PropertyDescription)
 	{
 		this.name = description.n;
+		this.kind = description.k;
 		this.type = resolveLazyType(description.t);
 		this._decorators = description.d?.map(Mapper.mapDecorators) || [];
 		this.optional = description.o;

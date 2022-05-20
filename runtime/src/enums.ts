@@ -83,6 +83,11 @@ export enum TypeKind
 	 * Enum
 	 */
 	Enum = 13,
+
+	/**
+	 * Rest (eg [string, ...string])
+	 */
+	RestType = 14
 }
 
 export enum Accessor

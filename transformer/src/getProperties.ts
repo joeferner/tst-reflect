@@ -1,4 +1,4 @@
-import { Accessor }                  from "tst-reflect";
+import { Accessor, TypeKind }                  from "tst-reflect";
 import * as ts                       from "typescript";
 import { Context }                   from "./contexts/Context";
 import { PropertyDescriptionSource } from "./declarations";
@@ -64,6 +64,7 @@ export function getProperties(symbol: ts.Symbol | undefined, type: ts.Type, cont
 
 	// If type is Array
 	const resolvedTypeArguments: readonly ts.Type[] = context.typeChecker.getTypeArguments(type as ts.TypeReference);//(type as any).resolvedTypeArguments;
+	const typeElements: ts.NodeArray<ts.TypeNode | ts.NamedTupleMember> | undefined = ((type as any).node as ts.TupleTypeNode)?.elements;
 
 	if (resolvedTypeArguments)
 	{
@@ -72,7 +73,8 @@ export function getProperties(symbol: ts.Symbol | undefined, type: ts.Type, cont
 			// TODO: Returning properties for Array is OK only in case that Array is Literal (eg. [number, string]). If it's generic Array (eg. Array<string>), it has unknown props but known generic type.
 			return {
 				n: index.toString(),
-				t: getTypeCall(type, undefined, context)
+				t: getTypeCall(type, undefined, context),
+				k: typeElements?.[index]?.kind === ts.SyntaxKind.RestType ? TypeKind.RestType : undefined
 			};
 		});
 

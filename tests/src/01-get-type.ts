@@ -1,6 +1,7 @@
 import {
 	getType,
-	Type
+	Type,
+	TypeKind
 } from "tst-reflect";
 
 test("getType<T>() is transformed and it is not Type.Unknown", () => {
@@ -45,4 +46,17 @@ test("getType<T>() tuple", () => {
 	expect(props).toHaveLength(2);
 	expect(props[0].type.name).toBe('String');
 	expect(props[1].type.name).toBe('Number');
+});
+
+test("getType<T>() tuple, variable length", () => {
+	type A = [string, ...string[]];
+
+	const t = getType<A>();
+	expect(t.name).toBe('A');
+	expect(t.isArray()).toBeTruthy();
+	const props = t.getProperties();
+	expect(props).toHaveLength(2);
+	expect(props[0].type.name).toBe('String');
+	expect(props[1].type.name).toBe('String');
+	expect(props[1].kind).toBe(TypeKind.RestType);
 });
