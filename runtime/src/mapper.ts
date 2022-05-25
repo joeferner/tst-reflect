@@ -30,14 +30,22 @@ import type { Type } from "./Type";
 /**
  * @internal
  */
-export function resolveLazyType(type?: Type | Function)
+export function resolveLazyType(type?: Type | (() => Type)): Type
 {
-	if (typeof type == "function" && type.name == "lazyType")
+	if (typeof type == "function")
 	{
 		return type();
 	}
 
-	return type;
+	return type as Type;
+}
+
+/**
+ * @internal
+ */
+export function resolveLazyTypes(types: Array<Type | (() => Type)>): Array<Type>
+{
+	return types.map(resolveLazyType);
 }
 
 export const Mapper = {
@@ -75,20 +83,6 @@ export const Mapper = {
 	mapMethods(m: MethodDescription): Method
 	{
 		return Reflect.construct(Method, [m], MethodActivator);
-	},
-
-	/**
-	 * @internal
-	 * @param p
-	 * @return {{name: string, optional: boolean, type: Type}}
-	 */
-	mapMethodParameters(p: ParameterDescription): MethodParameter
-	{
-		return ({
-			name: p.n,
-			type: resolveLazyType(p.t),
-			optional: p.o
-		});
 	},
 
 	/**

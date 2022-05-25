@@ -13,7 +13,7 @@ export interface ParameterDescription
 	/**
 	 * Type of the parameter
 	 */
-	t: Type;
+	t: Type | (() => Type);
 
 	/**
 	 * Optional parameter

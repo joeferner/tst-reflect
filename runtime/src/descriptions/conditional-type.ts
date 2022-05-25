@@ -8,17 +8,17 @@ export interface ConditionalTypeDescription
 	/**
 	 * Extends type
 	 */
-	e: Type;
+	e: Type | (() => Type);
 
 	/**
 	 * True type
 	 */
-	tt: Type;
+	tt: Type | (() => Type);
 
 	/**
 	 * False type
 	 */
-	ft: Type;
+	ft: Type | (() => Type);
 }
 
 export interface ConditionalType

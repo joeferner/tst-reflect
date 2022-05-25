@@ -54,7 +54,7 @@ export interface TypeProperties
 	/**
 	 * Generic type parameters
 	 */
-	tp?: Array<Type>;
+	tp?: Array<Type | (() => Type)>;
 
 	/**
 	 * Is union type
@@ -69,7 +69,7 @@ export interface TypeProperties
 	/**
 	 * Unified or intersecting types
 	 */
-	types?: Array<Type>;
+	types?: Array<Type | (() => Type)>;
 
 	/**
 	 * Some path/export information about the module it-self. Will help dynamically import modules.
@@ -85,12 +85,12 @@ export interface TypeProperties
 	/**
 	 * Extended base type
 	 */
-	bt?: Type;
+	bt?: Type | (() => Type);
 
 	/**
 	 * Implemented interface
 	 */
-	iface?: Type;
+	iface?: Type | (() => Type);
 
 	/**
 	 * Literal value
@@ -100,17 +100,17 @@ export interface TypeProperties
 	/**
 	 * Type arguments
 	 */
-	args?: Array<Type>;
+	args?: Array<Type | (() => Type)>;
 
 	/**
 	 * Default type
 	 */
-	def?: Type;
+	def?: Type | (() => Type);
 
 	/**
 	 * Constraining type
 	 */
-	con?: Type;
+	con?: Type | (() => Type);
 
 	/**
 	 * Conditional type description

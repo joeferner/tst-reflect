@@ -6,7 +6,7 @@ import {
 import {
 	Mapper,
 	resolveLazyType
-} from "../mapper";
+}                          from "../mapper";
 import type { Type }       from "../Type";
 import {
 	Decorator,
@@ -30,7 +30,7 @@ export interface PropertyDescription
 	/**
 	 * Property type
 	 */
-	t: Type;
+	t: Type | (() => Type);
 
 	/**
 	 * Optional property
@@ -87,7 +87,8 @@ export class Property
 	/**
 	 * Property type
 	 */
-	readonly type: Type;
+	private readonly _type: Type | (() => Type);
+	private _resolvedType?: Type;
 
 	/**
 	 * Optional property
@@ -127,7 +128,7 @@ export class Property
 	{
 		this.name = description.n;
 		this.kind = description.k;
-		this.type = resolveLazyType(description.t);
+		this._type = description.t;
 		this._decorators = description.d?.map(Mapper.mapDecorators) || [];
 		this.optional = description.o;
 		this.accessModifier = description.am ?? AccessModifier.Public;
@@ -142,6 +143,15 @@ export class Property
 	getDecorators(): ReadonlyArray<Decorator>
 	{
 		return this._decorators.slice();
+	}
+
+	get type(): Type
+	{
+		if (!this._resolvedType)
+		{
+			this._resolvedType = resolveLazyType(this._type);
+		}
+		return this._resolvedType;
 	}
 }
 

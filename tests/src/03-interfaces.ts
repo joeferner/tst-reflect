@@ -118,3 +118,30 @@ test("Optional interface method", () => {
 	expect(method.optional).toBe(true);
 	expect(method.getDecorators()).toHaveLength(0);
 });
+
+test("recursive interface", () => {
+	interface MyInterface {
+		propA: MyInterface;
+
+		methodA(paramA: MyInterface): MyInterface;
+	}
+
+	const type = getType<MyInterface>();
+
+	// property
+	const propA = type.getProperties().find(prop => prop.name === 'propA')!;
+	const propAType = propA.type;
+	expect(propAType.name).toBe('MyInterface');
+	const propANested = propAType.getProperties().find(prop => prop.name === 'propA')!;
+	expect(propANested.type.name).toBe('MyInterface');
+
+	// method
+	const methodA = type.getMethods().find(m => m.name === 'methodA')!;
+	const methodAReturnType = methodA.returnType;
+	expect(methodAReturnType.name).toBe('MyInterface');
+	const methodAReturnTypeNested = methodAReturnType.getMethods().find(m => m.name === 'methodA')!;
+	expect(methodAReturnTypeNested.returnType.name).toBe('MyInterface');
+
+	const methodAParamA = methodA.getParameters().find(p => p.name === 'paramA')!;
+	expect(methodAParamA.type.name).toBe('MyInterface');
+});

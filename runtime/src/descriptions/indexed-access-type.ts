@@ -8,12 +8,12 @@ export interface IndexedAccessTypeDescription
 	/**
 	 * Object type
 	 */
-	ot: Type;
+	ot: Type | (() => Type);
 
 	/**
 	 * Index type
 	 */
-	it: Type;
+	it: Type | (() => Type);
 }
 
 export interface IndexedAccessType

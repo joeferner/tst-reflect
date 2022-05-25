@@ -4,8 +4,14 @@ import {
 	Method,
 }                                 from "./descriptions/method";
 import type { Decorator }         from "./descriptions/decorator";
-import type { IndexedAccessType } from "./descriptions/indexed-access-type";
-import type { ConditionalType }   from "./descriptions/conditional-type";
+import type {
+	IndexedAccessType,
+	IndexedAccessTypeDescription
+}                                 from "./descriptions/indexed-access-type";
+import type {
+	ConditionalType,
+	ConditionalTypeDescription
+}                                 from "./descriptions/conditional-type";
 import {
 	ConstructorImport,
 	ConstructorImportActivator
@@ -18,7 +24,8 @@ import type { JsDoc }             from "./descriptions/js-doc";
 import { TypeKind }               from "./enums";
 import {
 	Mapper,
-	resolveLazyType
+	resolveLazyType,
+	resolveLazyTypes
 }                                 from "./mapper";
 import { flatten }                from "./flatten";
 
@@ -55,7 +62,8 @@ export class Type
 	/** @internal */
 	private _isIntersection!: boolean;
 	/** @internal */
-	private _types!: Array<Type>;
+	private _types!: Array<Type | (() => Type)>;
+	private _resolvedTypes!: Array<Type>;
 	/** @internal */
 	private _properties!: Array<Property>;
 	/** @internal */
@@ -65,23 +73,31 @@ export class Type
 	/** @internal */
 	private _constructors!: Array<Constructor>;
 	/** @internal */
-	private _typeParameters!: Array<Type>;
+	private _typeParameters!: Array<Type | (() => Type)>;
+	private _resolvedTypeParameters!: Array<Type>;
 	/** @internal */
-	private _baseType?: Type;
+	private _baseType?: Type | (() => Type);
+	private _resolvedBaseType?: Type;
 	/** @internal */
-	private _interface?: Type;
+	private _interface?: Type | (() => Type);
+	private _resolvedInterface?: Type;
 	/** @internal */
 	private _literalValue?: any;
 	/** @internal */
-	private _typeArgs!: Array<Type>;
+	private _typeArgs!: Array<Type | (() => Type)>;
+	private _resolvedTypeArgs!: Array<Type>;
 	/** @internal */
-	private _conditionalType?: ConditionalType;
+	private _conditionalType?: ConditionalTypeDescription;
+	private _resolvedConditionalType?: ConditionalType;
 	/** @internal */
-	private _indexedAccessType?: IndexedAccessType;
+	private _indexedAccessType?: IndexedAccessTypeDescription;
+	private _resolvedIndexedAccessType?: IndexedAccessType;
 	/** @internal */
-	private _genericTypeConstraint?: Type;
+	private _genericTypeConstraint?: Type | (() => Type);
+	private _resolvedGenericTypeConstraint?: Type;
 	/** @internal */
-	private _genericTypeDefault?: Type;
+	private _genericTypeDefault?: Type | (() => Type);
+	private _resolvedGenericTypeDefault?: Type;
 	/** @internal */
 	private _jsDocs?: Array<JsDoc>;
 		
@@ -131,39 +147,23 @@ export class Type
 		this._properties = description.props?.map(Mapper.mapProperties) || [];
 		this._methods = description.meths?.map(Mapper.mapMethods) || [];
 		this._decorators = description.decs?.map(Mapper.mapDecorators) || [];
-		this._typeParameters = description.tp?.map(t => resolveLazyType(t)) || [];
+		this._typeParameters = description.tp || [];
 		this._ctor = description.ctor;
 		this._ctorDesc = Reflect.construct(ConstructorImport, [description.ctorDesc], ConstructorImportActivator);
-		this._interface = resolveLazyType(description.iface);
+		this._interface = description.iface;
 		this._isUnion = description.union || false;
 		this._isIntersection = description.inter || false;
-		this._types = description.types?.map(t => resolveLazyType(t)) || [];
+		this._types = description.types || [];
 		this._literalValue = description.v;
-		this._typeArgs = description.args?.map(t => resolveLazyType(t)) || [];
-		this._conditionalType = description.ct ? {
-			extends: description.ct.e,
-			trueType: resolveLazyType(description.ct.tt),
-			falseType: resolveLazyType(description.ct.ft)
-		} : undefined;
-		this._conditionalType = description.ct ? {
-			extends: description.ct.e,
-			trueType: resolveLazyType(description.ct.tt),
-			falseType: resolveLazyType(description.ct.ft)
-		} : undefined;
-		this._indexedAccessType = description.iat ? {
-			objectType: description.iat.ot,
-			indexType: resolveLazyType(description.iat.it)
-		} : undefined;
-		this._genericTypeConstraint = resolveLazyType(description.con);
-		this._genericTypeDefault = resolveLazyType(description.def);
+		this._typeArgs = description.args || [];
+		this._conditionalType = description.ct;
+		this._indexedAccessType = description.iat;
+		this._genericTypeConstraint = description.con;
+		this._genericTypeDefault = description.def;
 		this._jsDocs = description.jsDocs?.map(Mapper.mapJsDocs);
 
 		// BaseType of Type.Object must be undefined
-		this._baseType = resolveLazyType(description.bt)
-			?? (this.isNative() && this.name == "Object" && (!description.props || !description.props.length)
-					? undefined
-					: Type.Object
-			);
+		this._baseType = description.bt;
 	}
 
 	/**
@@ -171,7 +171,15 @@ export class Type
 	 */
 	get condition(): ConditionalType | undefined
 	{
-		return this._conditionalType;
+		if (!this._resolvedConditionalType)
+		{
+			this._resolvedConditionalType = this._conditionalType ? {
+				extends: resolveLazyType(this._conditionalType.e),
+				trueType: resolveLazyType(this._conditionalType.tt),
+				falseType: resolveLazyType(this._conditionalType.ft)
+			} : undefined;
+		}
+		return this._resolvedConditionalType;
 	}
 
 	/**
@@ -179,7 +187,14 @@ export class Type
 	 */
 	get indexedAccessType(): IndexedAccessType | undefined
 	{
-		return this._indexedAccessType;
+		if (!this._resolvedIndexedAccessType)
+		{
+			return this._indexedAccessType ? {
+				objectType: resolveLazyType(this._indexedAccessType.ot),
+				indexType: resolveLazyType(this._indexedAccessType.it)
+			} : undefined;
+		}
+		return this._resolvedIndexedAccessType;
 	}
 
 	/**
@@ -187,7 +202,11 @@ export class Type
 	 */
 	get types(): ReadonlyArray<Type>
 	{
-		return this._types.slice();
+		if (!this._resolvedTypes)
+		{
+			this._resolvedTypes = resolveLazyTypes(this._types);
+		}
+		return this._resolvedTypes.slice();
 	}
 
 	/**
@@ -205,7 +224,15 @@ export class Type
 	 */
 	get baseType(): Type | undefined
 	{
-		return this._baseType;
+		if (!this._resolvedBaseType)
+		{
+			this._resolvedBaseType = resolveLazyType(this._baseType)
+				?? (this.isNative() && this.name == "Object" && (!this._properties || !this._properties.length)
+					? undefined
+					: Type.Object
+				)
+		}
+		return this._resolvedBaseType;
 	}
 
 	/**
@@ -213,7 +240,11 @@ export class Type
 	 */
 	get interface(): Type | undefined
 	{
-		return this._interface;
+		if (!this._resolvedInterface)
+		{
+			this._resolvedInterface = resolveLazyType(this._interface);
+		}
+		return this._resolvedInterface;
 	}
 
 	/**
@@ -254,7 +285,11 @@ export class Type
 	 */
 	get genericTypeConstraint(): Type | undefined
 	{
-		return this._genericTypeConstraint;
+		if (!this._resolvedGenericTypeConstraint)
+		{
+			this._resolvedGenericTypeConstraint = resolveLazyType(this.genericTypeConstraint);
+		}
+		return this._resolvedGenericTypeConstraint;
 	}
 
 	/**
@@ -535,7 +570,11 @@ export class Type
 	 */
 	getTypeParameters(): ReadonlyArray<Type>
 	{
-		return this._typeParameters.slice();
+		if (!this._resolvedTypeParameters)
+		{
+			this._resolvedTypeParameters = resolveLazyTypes(this._typeParameters);
+		}
+		return this._resolvedTypeParameters.slice();
 	}
 
 	/**
@@ -543,7 +582,11 @@ export class Type
 	 */
 	getTypeArguments(): ReadonlyArray<Type>
 	{
-		return this._typeArgs.slice();
+		if (!this._resolvedTypeArgs)
+		{
+			this._resolvedTypeArgs = resolveLazyTypes(this._typeArgs);
+		}
+		return this._resolvedTypeArgs.slice();
 	}
 
 	/**

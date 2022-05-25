@@ -1,7 +1,8 @@
 import { AccessModifier } from "../enums";
 import {
 	Mapper,
-	resolveLazyType
+	resolveLazyType,
+	resolveLazyTypes
 }                         from "../mapper";
 import type { Type }      from "../Type";
 import {
@@ -35,7 +36,7 @@ export interface MethodDescription
 	/**
 	 * Return type
 	 */
-	rt: Type;
+	rt: Type | (() => Type);
 
 	/**
 	 * Decorators
@@ -45,7 +46,7 @@ export interface MethodDescription
 	/**
 	 * Generic type parameters
 	 */
-	tp?: Array<Type>;
+	tp?: Array<Type | (() => Type)>;
 
 	/**
 	 * Optional method
@@ -65,7 +66,8 @@ export interface MethodDescription
 
 export abstract class MethodBase
 {
-	private readonly _parameters: Array<MethodParameter>;
+	private readonly _parameters: Array<ParameterDescription>;
+	private _resolvedParameters?: Array<MethodParameter>;
 	private readonly _jsDocs: Array<JsDoc> | undefined;
 
 	/**
@@ -74,7 +76,7 @@ export abstract class MethodBase
 	 */
 	protected constructor(params: Array<ParameterDescription>, jsDocs: Array<JsDocDescription> | undefined)
 	{
-		this._parameters = params?.map(Mapper.mapMethodParameters) || [];
+		this._parameters = params || [];
 		this._jsDocs = jsDocs?.map(Mapper.mapJsDocs);
 	}
 
@@ -83,7 +85,22 @@ export abstract class MethodBase
 	 */
 	getParameters(): ReadonlyArray<MethodParameter>
 	{
-		return this._parameters.slice();
+		if (!this._resolvedParameters)
+		{
+			this._resolvedParameters = this._parameters.map(p => {
+				let type = p.t;
+				if (typeof type === 'function')
+				{
+					type = type();
+				}
+				return {
+					name: p.n,
+					type,
+					optional: p.o
+				};
+			});
+		}
+		return this._resolvedParameters.slice();
 	}
 
 	/**
@@ -101,9 +118,11 @@ export abstract class MethodBase
 export class Method extends MethodBase
 {
 	private readonly _name: string;
-	private readonly _returnType: Type;
+	private readonly _returnType: Type | (() => Type);
+	private _resolvedReturnType?: Type;
 	private readonly _optional: boolean;
-	private readonly _typeParameters: Array<Type>;
+	private readonly _typeParameters: Array<Type | (() => Type)>;
+	private _resolvedTypeParameters?: Array<Type>;
 	private readonly _decorators: Array<Decorator>;
 	private readonly _accessModifier: AccessModifier;
 
@@ -120,7 +139,11 @@ export class Method extends MethodBase
 	 */
 	get returnType(): Type
 	{
-		return this._returnType;
+		if (!this._resolvedReturnType)
+		{
+			this._resolvedReturnType = resolveLazyType(this._returnType);
+		}
+		return this._resolvedReturnType;
 	}
 
 	/**
@@ -153,8 +176,8 @@ export class Method extends MethodBase
 		}
 
 		this._name = description.n;
-		this._typeParameters = description.tp?.map(t => resolveLazyType(t)) || [];
-		this._returnType = resolveLazyType(description.rt);
+		this._typeParameters = description.tp || [];
+		this._returnType = description.rt;
 		this._optional = description.o;
 		this._accessModifier = description.am;
 		this._decorators = description.d?.map(Mapper.mapDecorators) || [];
@@ -166,7 +189,11 @@ export class Method extends MethodBase
 	 */
 	getTypeParameters(): ReadonlyArray<Type>
 	{
-		return this._typeParameters.slice();
+		if (!this._resolvedTypeParameters)
+		{
+			this._resolvedTypeParameters = resolveLazyTypes(this._typeParameters);
+		}
+		return this._resolvedTypeParameters.slice();
 	}
 
 	/**
